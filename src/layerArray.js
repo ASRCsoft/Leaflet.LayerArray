@@ -160,11 +160,13 @@ L.LayerArray = L.LayerGroup.extend({
 	// switch to it
 	this.switchToIndex(new_ind);
     },
-    makeSlider: function(dim, orientation) {
-	var slider_options = {layerArray: this, dim: dim,
-			      orientation: orientation ? orientation : 'vertical',
-			      position: 'bottomleft'};
-	return L.control.arraySlider(slider_options);
+    makeSlider: function(dim, options) {
+	if (!options) {
+	    var options = {};
+	}
+	options['layerArray'] = this;
+	options['dim'] = dim;
+	return L.control.arraySlider(options);
     }
 });
 
