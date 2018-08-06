@@ -1,10 +1,10 @@
 # Leaflet.LayerArray
 Provides tools to organize and navigate between arrays of layers. Useful for time series, layers representing different heights, different starting points, etc.
 
+[Demo](pireds.asrc.cestm.albany.edu/~xcite/layerArray/)
+
 ## L.LayerArray
 An array of layers with functions for switching layers by index and coordinate values.
-
-[Demo](pireds.asrc.cestm.albany.edu/~xcite/layerArray/)
 
 Option                        | Description
 ------------------------------|---------------------------------------------------------
