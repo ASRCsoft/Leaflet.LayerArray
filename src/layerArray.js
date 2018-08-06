@@ -4,8 +4,6 @@
 // also a timedimension layer that works with the layerArray
 
 L.LayerArray = L.LayerGroup.extend({
-    cache: [],
-    values: [],
     initialize: function(options) {
 	L.LayerGroup.prototype.initialize.call(this, []);
 	this.coords = options['coords'];
@@ -60,10 +58,7 @@ L.LayerArray = L.LayerGroup.extend({
 	return this._indToCacheInd(this.getCoordsIndex(coords));
     },
     addToCache: function(ind) {
-	console.log('addToCache');
-	console.log(ind);
 	var arr_ind = this._indToCacheInd(ind);
-	console.log(arr_ind);
 	if (this.cache[arr_ind]) {
 	    console.warn('Overwriting an existing layer');
 	};
@@ -98,22 +93,13 @@ L.LayerArray = L.LayerGroup.extend({
 	return is_loaded;
     },
     getCoordIndex: function(coord, dim) {
-	console.log('getCoordIndex');
 	// get the index corresponding to a coordinate value, checking
 	// to properly deal with date objects
 	
 	// check if the dimension is a date dimension
 	var is_date = this.coords[dim][0] instanceof Date;
-	console.log(dim);
-	console.log(this.coords[dim][0]);
-	console.log(is_date);
-	console.log(coord);
-	console.log(this.coords[dim]);
 	if (is_date) {
-	    console.log(this.coords[dim].map(Number));
-	    console.log(+coord);
 	    var ind = this.coords[dim].map(Number).indexOf(+coord);
-	    console.log(ind);
 	} else if (this.coords[dim][0] instanceof Object) {
 	    throw "LayerArray can't get index of object values (except dates)";
 	} else {
@@ -132,11 +118,8 @@ L.LayerArray = L.LayerGroup.extend({
 	return ind;
     },
     addIndex: function(ind) {
-	console.log('addIndex');
 	// should check first that the layer isn't already on the map
 	return this.loadLayer(ind).done(function() {
-	    console.log('finished caching...');
-	    console.log(this.cache[this._indToCacheInd(ind)]);
 	    this.addLayer(this.cache[this._indToCacheInd(ind)]);	    
 	}.bind(this));
     },
@@ -162,7 +145,6 @@ L.LayerArray = L.LayerGroup.extend({
 	return this.addIndex(ind);
     },
     switchDim: function(dim, ind) {
-	console.log('switchDim');
 	if (this.ind) {
 	    // make a copy of the current index
 	    var new_ind = this.ind.slice();
@@ -176,12 +158,12 @@ L.LayerArray = L.LayerGroup.extend({
 	// update it
 	new_ind[dim] = ind;
 	// switch to it
-	console.log(new_ind);
 	this.switchToIndex(new_ind);
     },
     makeSlider: function(dim, orientation) {
 	var slider_options = {layerArray: this, dim: dim,
-			      orientation: orientation ? orientation : 'vertical'};
+			      orientation: orientation ? orientation : 'vertical',
+			      position: 'bottomleft'};
 	return L.control.arraySlider(slider_options);
     }
 });
@@ -198,9 +180,9 @@ L.Control.ArraySlider = L.Control.extend({
     onAdd: function() {
 	var layerArray = this.options.layerArray;
 	var dim = this.options.dim || 0;
-	var labels = this.options.labels || layerArray.values[dim];
+	var labels = this.options.labels || layerArray.coords[dim].map(String);
 	var dim_length = labels.length;
-	var orientation = this.options.orientation || 'horizontal';
+	var orientation = this.options.orientation || 'vertical';
 	var is_vertical = orientation == 'vertical';
 	var title = this.options.title || '';
 	var slider_length = this.options.length || (25 * (dim_length - 1)) + 'px';
@@ -266,77 +248,53 @@ L.TimeDimension.Layer.LayerArray = L.TimeDimension.Layer.extend({
     },
 
     onAdd: function(map) {
-	// I think this should be edited somehow to start with the
-	// correct time
         L.TimeDimension.Layer.prototype.onAdd.call(this, map);
-        // if (this._timeDimension) {
-        //     this._getDataForTime(this._timeDimension.getCurrentTime());
-        // }
 	this._update();
+	this._baseLayer.addTo(map);
     },
 
     _findTime: function(t) {
-	console.log('_findTime');
-	console.log(t);
 	// find the corresponding time index
 	return this._baseLayer.getCoordIndex(t, this.dim);
     },
 
     _loadTime: function(t) {
-	// oooooooooohhhh kkkkaaaayyyy obviously need to create a
-	// setIndex function to check and make sure I don't f up the
-	// layerArray index
-	console.log('_loadTime');
-	console.log(this._baseLayer.ind);
-	// get the new index
-	// if the layerArray has no indices, set them to zeros
-	if (!this._baseLayer.ind) {
-	    this._baseLayer.ind = [];
+	// load the layer for a given time
+	if (this._baseLayer.ind) {
+	    var new_ind = this._baseLayer.ind.slice();
+	} else {
+	    var new_ind = [];
 	    for (i=0; i<this._baseLayer.coords.length; i++) {
-		this._baseLayer.ind.push(0);
+		new_ind.push(0);
 	    }
 	}
-	console.log(this._baseLayer.ind);
-	var new_ind = this._baseLayer.ind.slice();
-	console.log(new_ind);
 	new_ind[this.dim] = this._findTime(t);
-	console.log(new_ind);
 	return this._baseLayer.loadLayer(new_ind);
     },
 
     _onNewTimeLoading: function(ev) {
-	console.log('_onNewTimeLoading');
-	// ok. Instead of getting data directly, we're going to get
-	// the appropriate layer from site.contours, then call
-	// loadData on it
+	// fire event after time is loaded to let the time dimension
+	// know the layer status
         if (!this._map) {
             return;
         }
-	// should probably be grabbing data here and firing event on
-	// completion (but this is good enough for now)
 	var time = ev.time;
-	console.log(time);
 	this._loadTime(time).done(function() {
 	    this.fire('timeload', {
 		time: time
             });
 	}.bind(this));
-        return;
     },
 
     isReady: function(time) {
-	console.log('isReady');
-	// return true;
 	// change this to handle a non-existent index!
 	var new_ind = this._baseLayer.ind.slice();
 	var time_index = this._findTime(time);
 	new_ind[this.dim] = time_index;
-	console.log(new_ind);
 	return this._baseLayer.layerIsLoaded(new_ind);
     },
 
     _update: function() {
-	console.log('_update');
 	// switch to the appropriate time
         if (!this._map)
             return;
@@ -348,15 +306,14 @@ L.TimeDimension.Layer.LayerArray = L.TimeDimension.Layer.extend({
     },
 
     changeTime: function(new_time) {
-	console.log('changeTime');
-	console.log(new_time);
 	var ind = this._findTime(new_time);
 	// if the layerArray has no indices, set them to zeros
 	if (!this._baseLayer.ind) {
-	    this._baseLayer.ind = [];
+	    var start_ind = [];
 	    for (i=0; i<this._baseLayer.coords.length; i++) {
-		this._baseLayer.ind.push(0);
+		start_ind.push(0);
 	    }
+	    this._baseLayer._setIndex(start_ind);
 	}
 	this._baseLayer.switchDim(this.dim, ind);
     }
