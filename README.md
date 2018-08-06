@@ -4,6 +4,8 @@ Provides tools to organize and navigate between arrays of layers. Useful for tim
 ## L.LayerArray
 An array of layers with functions for switching layers by index and coordinate values.
 
+[Demo](pireds.asrc.cestm.albany.edu/~xcite/layerArray/)
+
 Option                        | Description
 ------------------------------|---------------------------------------------------------
 `coords`               | An array of arrays of the values along each dimension. Example: `[['a','b','c'],[100,200,300]]`
