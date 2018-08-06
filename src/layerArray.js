@@ -177,46 +177,71 @@ L.layerArray = function(options) {
 
 
 L.Control.ArraySlider = L.Control.extend({
-    // use the other (non-bootstrap, non-jquery) slider library!!
-    // this is going to have the dimension number and layerarray object
     onAdd: function() {
 	var layerArray = this.options.layerArray;
 	var dim = this.options.dim || 0;
 	var labels = this.options.labels || layerArray.coords[dim].map(String);
-	var dim_length = labels.length;
-	var orientation = this.options.orientation || 'vertical';
-	var is_vertical = orientation == 'vertical';
-	var title = this.options.title || '';
-	var slider_length = this.options.length || (25 * (dim_length - 1)) + 'px';
+	this.dim_length = labels.length;
+	this.orientation = this.options.orientation || 'vertical';
+	this.vertical = this.orientation == 'vertical';
+	this.title = this.options.title || '';
+	this.slider_length = this.options.length || (25 * (this.dim_length - 1)) + 'px';
 	// set up the div if it isn't there already
-	if (is_vertical) {
+	if (this.vertical) {
 	    this._div = L.DomUtil.create('div', 'info slider-axis vertical-axis');
 	} else {
 	    this._div = L.DomUtil.create('div', 'info slider-axis');
 	}
-	// var grades = levels,
-	//     labels = [];
-	var range_title = '<h4>' + title + '</h4>'
-	var range = '<div id="height_slider2"></div>'
+	var range_title = '<h3>' + this.title + '</h3>';
+	var range = '<div id="height_slider2"></div>';
 	this._div.innerHTML = range_title + range;
 	var slider = $(this._div).find('div')[0];
-	var switch_fn = function(e, ui) {
-	    this.switchDim(dim, ui.value);
-	}.bind(layerArray);
 
-	// set up the jquery slider
-	var slider_options = {max: dim_length - 1, orientation: orientation,
-			      slide: switch_fn, change: switch_fn};
-
-	// get the slider labels
-	var pip_options = {rest: 'label', labels: labels};
-	$(slider).slider(slider_options).slider("pips", pip_options);
-	if (is_vertical) {
+	var format_options = {
+	    to: function ( value ) {
+	    	return labels[value];
+	    },
+	    from: function ( value ) {
+	    	return labels.indexOf(value);
+	    }
+	}
+	var pip_options = {mode: 'steps',
+			   format: format_options,
+			   density: 100};
+	var slider_options = {start: [0], step: 1,
+			      range: {min: [0], max: [this.dim_length - 1]},
+			      orientation: this.orientation,
+			      pips: pip_options};
+	if (this.vertical) {
 	    // set the slider height
-	    $(slider)[0].style.height = slider_length;
+	    $(slider)[0].style.height = this.slider_length;
+	    slider_options['direction'] = 'rtl';
 	} else {
 	    // set the slider width
-	    $(slider)[0].style.width = slider_length;
+	    $(slider)[0].style.width = this.slider_length;
+	}
+	noUiSlider.create(slider, slider_options);
+
+	// connect to the layerArray
+	switch_fn = function( values, handle, unencoded, tap, positions ) {
+	    // values: Current slider values (array);
+	    // handle: Handle that caused the event (number);
+	    // unencoded: Slider values without formatting (array);
+	    // tap: Event was caused by the user tapping the slider (boolean);
+	    // positions: Left offset of the handles (array);
+	    layerArray.switchDim(dim, unencoded);
+	};
+	slider.noUiSlider.on('update', switch_fn);
+
+	// allow navigation via clicking pips-- following:
+	// https://refreshless.com/nouislider/examples/#section-click-pips
+	var pips = slider.querySelectorAll('.noUi-value');
+	function clickOnPip ( ) {
+	    var value = Number(this.getAttribute('data-value'));
+	    slider.noUiSlider.set(value);
+	}
+	for ( var i = 0; i < pips.length; i++ ) {
+	    pips[i].addEventListener('click', clickOnPip);
 	}
 
 	// Disable dragging when user's cursor enters the element
