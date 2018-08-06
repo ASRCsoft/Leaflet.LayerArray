@@ -117,20 +117,20 @@ L.LayerArray = L.LayerGroup.extend({
 	};
 	return ind;
     },
-    addIndex: function(ind) {
+    addByIndex: function(ind) {
 	// should check first that the layer isn't already on the map
 	return this.loadLayer(ind).done(function() {
 	    this.addLayer(this.cache[this._indToCacheInd(ind)]);	    
 	}.bind(this));
     },
-    addCoord: function(coords) {
+    addByCoord: function(coords) {
 	var ind = this.getCoordsIndex(coords);
-	this.addIndex(ind);
+	this.addByIndex(ind);
     },
-    removeIndex: function(ind) {
+    removeByIndex: function(ind) {
 	this.removeLayer(this.cache[this._indToCacheInd(ind)]);
     },
-    removeCoord: function(coords) {
+    removeByCoord: function(coords) {
 	this.removeLayer(this.cache[this._coordsToCacheInd(coords)]);
     },
     switchToValue: function(coords) {
@@ -142,7 +142,7 @@ L.LayerArray = L.LayerGroup.extend({
 	    this.clearLayers();
 	} catch {};
 	this._setIndex(ind);
-	return this.addIndex(ind);
+	return this.addByIndex(ind);
     },
     switchDim: function(dim, ind) {
 	if (this.ind) {
