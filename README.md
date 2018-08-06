@@ -1,17 +1,17 @@
 # Leaflet.LayerArray
-Provides tools to create arrays of layers and easily switch between them. Useful for time series, layers representing different heights, different starting points, etc.
+Provides tools to organize and navigate between arrays of layers. Useful for time series, layers representing different heights, different starting points, etc.
 
 ## L.LayerArray
-An array of layers with functions for switching layers by index and dimension values.
+An array of layers with functions for switching layers by index and coordinate values.
 
 Option                        | Description
 ------------------------------|---------------------------------------------------------
-`values`               | A array of arrays of the values along each dimension. Example: `[['a','b','c'],[100,200,300]]`
-`makeLayer`        | A function that takes an array of indices and returns a promise that resolves to the corresponding layer. The layerArray will use this function to create new layers when requested.
+`coords`               | An array of arrays of the values along each dimension. Example: `[['a','b','c'],[100,200,300]]`
+`makeLayer`        | A function that takes an array of indices and returns a leaflet layer, or a promise that resolves to the corresponding layer. The layerArray will call this function to create new layers when requested.
 
 
 ## L.Control.ArraySlider
-A jQuery UI slider used to control a dimension of a LayerArray. (Requires jQuery, jQuery UI, and [jQuery UI Slider Pips](http://simeydotme.github.io/jQuery-ui-Slider-Pips/).)
+A jQuery UI slider used to control a dimension of a LayerArray. (Requires [noUiSlider](https://refreshless.com/nouislider/).)
 
 
 Option                        | Description
