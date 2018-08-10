@@ -271,7 +271,8 @@ L.TimeDimension.Layer.LayerArray = L.TimeDimension.Layer.extend({
     initialize: function(layer, options) {
         L.TimeDimension.Layer.prototype.initialize.call(this, layer, options);
 	this.dim = this.options.dim;
-        this._currentLoadedTime = this._baseLayer.coords[this.dim][0];
+	this.times = this._baseLayer.coords[this.dim];
+        this._currentLoadedTime = this.times[0];
     },
 
     onAdd: function(map) {
