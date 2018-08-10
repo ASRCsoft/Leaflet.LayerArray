@@ -62,7 +62,7 @@ L.LayerArray = L.LayerGroup.extend({
 	if (this.cache[arr_ind]) {
 	    console.warn('Overwriting an existing layer');
 	};
-	var new_layer = this.makeLayer(ind);
+	var new_layer = this.makeLayer(ind, this.getIndexCoords(ind));
 	if (this._isPromise(new_layer)) {
 	    // overwrite the promise with the layer after it loads
 	    var f = function(x) {
@@ -116,6 +116,13 @@ L.LayerArray = L.LayerGroup.extend({
 	    ind.push(this.getCoordIndex(coords[i], i));
 	};
 	return ind;
+    },
+    getIndexCoords: function(ind) {
+	var coords = [];
+	for (i = 0; i < this.ndim; i++) {
+	    coords.push(this.coords[i][ind[i]]);
+	};
+	return coords;
     },
     addByIndex: function(ind) {
 	// should check first that the layer isn't already on the map
