@@ -19,8 +19,8 @@
 }
 
 /* slider pips */
-.noUi-marker-large {
-    background: #999;
+.noUi-marker {
+    background: #222;
 }
 .noUi-value {
     color: #080808;
